@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>QR Document Organizer</title>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <link rel="stylesheet" href="index.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body>
+  <div class="dark-toggle">
+    <label class="switch">
+      <input type="checkbox" id="themeSwitch">
+      <span class="slider"></span>
+    </label>
+    <span class="dark-label">🌙</span>
+  </div>
+
+  <div class="scanner-wrapper">
+    <div class="section-header">
+      <h2 class="section-title">📷 Scan QR Code</h2>
+      <button id="openManageModal" class="manage-icon" title="Manage">
+        <i class="fas fa-cog"></i>
+      </button>
+    </div>
+
+    <div id="reader" class="qr-reader">
+      <div class="qr-overlay"></div>
+    </div>
+
+    <div id="result" class="result-box hidden">
+      <h3 class="result-title">📄 Location Info:</h3>
+      <p><strong>Shelf:</strong> <span id="shelf">-</span></p>
+      <p><strong>Container:</strong> <span id="container">-</span></p>
+      <p><strong>Folder:</strong> <span id="folder">-</span></p>
+
+      <div id="updateSection" class="update-section hidden">
+        <h4 class="update-title">✏️ Update Document Location</h4>
+
+        <label>New Shelf:</label>
+        <select id="shelfSelect" class="form-select"></select>
+
+        <label>New Container:</label>
+        <select id="containerSelect" class="form-select"></select>
+
+        <label>New Folder:</label>
+        <select id="folderSelect" class="form-select"></select>
+
+        <button onclick="updateLocation()" class="update-btn">✅ Update Location</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="manageModal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <div id="manage-container"></div>
+    </div>
+  </div>
+
+  <script>
+    let currentQR = null;
+    let currentType = null;
+    let dataStore = { shelves: [], containers: [], folders: [], documents: [] };
+
+      // Dark Mode Toggle
+    const toggle = document.getElementById("themeSwitch");
+    toggle.addEventListener("change", () => {
+      document.body.classList.toggle("dark-mode");
+    });
+    
+    function loadFromStorage() {
+      const saved = localStorage.getItem('shelfData');
+      if (saved) dataStore = JSON.parse(saved);
+    }
+
+    function findById(type, id) {
+      return dataStore[type].find(item => item.id === id);
+    }
+
+    function findLocation(qrId) {
+      const doc = findById('documents', qrId);
+      if (doc) {
+        const folder = findById('folders', doc.parent);
+        const container = folder && findById('containers', folder.parent);
+        const shelf = container && findById('shelves', container.parent);
+        return {
+          type: 'document',
+          id: doc.id,
+          shelf: shelf?.id || "-",
+          container: container?.id || "-",
+          folder: folder?.id || "-"
+        };
+      }
+
+      const folder = findById('folders', qrId);
+      if (folder) {
+        const container = findById('containers', folder.parent);
+        const shelf = container && findById('shelves', container.parent);
+        return {
+          type: 'folder',
+          id: folder.id,
+          shelf: shelf?.id || "-",
+          container: container?.id || "-",
+          folder: folder.id
+        };
+      }
+
+      const container = findById('containers', qrId);
+      if (container) {
+        const shelf = findById('shelves', container.parent);
+        return {
+          type: 'container',
+          id: container.id,
+          shelf: shelf?.id || "-",
+          container: container.id,
+          folder: "-"
+        };
+      }
+
+      return null;
+    }
+
+    function populateDropdown(id, list) {
+      const select = document.getElementById(id);
+      if (!select) return;
+      select.innerHTML = "";
+      list.forEach(item => {
+        const option = document.createElement("option");
+        option.value = item.id;
+        option.textContent = item.id;
+        select.appendChild(option);
+      });
+    }
+
+    function updateLocation() {
+      if (!currentQR || currentType !== 'document') return;
+
+      const newShelf = document.getElementById("shelfSelect").value;
+      const newContainer = document.getElementById("containerSelect").value;
+      const newFolder = document.getElementById("folderSelect").value;
+
+      const doc = findById('documents', currentQR);
+      if (doc) {
+        doc.parent = newFolder;
+        localStorage.setItem('shelfData', JSON.stringify(dataStore));
+        alert("✅ Document location updated.");
+        showDocumentInfo(currentQR);
+      }
+    }
+
+    function showDocumentInfo(qrId) {
+      const loc = findLocation(qrId);
+      if (!loc) {
+        alert("❌ Item not found!");
+        return;
+      }
+
+      currentQR = qrId;
+      currentType = loc.type;
+
+      document.getElementById("shelf").textContent = loc.shelf;
+      document.getElementById("container").textContent = loc.container;
+      document.getElementById("folder").textContent = loc.folder;
+
+      document.getElementById("result").style.display = "block";
+
+      if (loc.type === "document") {
+        populateDropdown("shelfSelect", dataStore.shelves);
+        populateDropdown("containerSelect", dataStore.containers);
+        populateDropdown("folderSelect", dataStore.folders);
+
+        document.getElementById("shelfSelect").value = loc.shelf;
+        document.getElementById("containerSelect").value = loc.container;
+        document.getElementById("folderSelect").value = loc.folder;
+
+        document.getElementById("updateSection").style.display = "block";
+      } else {
+        document.getElementById("updateSection").style.display = "none";
+      }
+    }
+
+    function initQRScanner() {
+      const qr = new Html5Qrcode("reader");
+      qr.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: 250 },
+        (code) => {
+          qr.stop();
+          alert("✅ Scanned: " + code.trim());
+          showDocumentInfo(code.trim());
+        },
+        (errorMsg) => {
+          // ignore scan errors
+        }
+      ).catch(err => {
+        console.error("Camera init failed:", err);
+        alert("Camera access denied or not available.");
+      });
+    }
+
+    // Load manage.html first, then start app
+window.addEventListener("DOMContentLoaded", () => {
+  const openBtn = document.getElementById('openManageModal');
+  const modal = document.getElementById('manageModal');
+  const closeBtn = modal.querySelector('.close');
+
+  openBtn.addEventListener('click', () => {
+    modal.style.display = "block";
+  });
+
+  closeBtn.addEventListener('click', () => {
+    modal.style.display = "none";
+  });
+
+  window.addEventListener('click', (e) => {
+    if (e.target == modal) modal.style.display = "none";
+  });
+
+  // Load manage.html
+  fetch('manage.html')
+    .then(res => res.text())
+    .then(html => {
+      const temp = document.createElement('div');
+      temp.innerHTML = html;
+      const content = temp.querySelector('body') || temp;
+      document.getElementById('manage-container').innerHTML = content.innerHTML;
+
+      // Load manage functions
+      const script = document.createElement('script');
+      script.src = 'script.js';
+      script.onload = () => {
+        loadFromStorage();
+        initQRScanner();
+      };
+      document.body.appendChild(script);
+    })
+    .catch(err => {
+      console.error("Failed to load manage.html:", err);
+    });
+});
+
+  </script>
+<script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
+<!-- Load JsBarcode -->
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+
+</body>
+</html>

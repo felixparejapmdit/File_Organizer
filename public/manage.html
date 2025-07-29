@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Shelf QR Manager</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Shelf QR Manager</h1>
+
+  <div class="controls">
+    <button onclick="createShelf()">Create Shelf</button>
+    <button onclick="createContainer()">Create Container</button>
+    <button onclick="createFolder()">Create Folder</button>
+    <button onclick="createDocument()">Create Document</button>
+    <button onclick="moveItem()">Move Item (Manual)</button>
+    <button onclick="saveData()">💾 Save</button>
+    <button onclick="loadData()">📂 Load</button>
+    <button onclick="exportData()">⬇️ Export JSON</button>
+    <input type="file" id="importFile" onchange="importData()" />
+  </div>
+
+  <input type="text" id="searchInput" placeholder="Search by ID..." onkeyup="searchItems()">
+
+  <div id="output"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

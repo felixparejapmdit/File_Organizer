@@ -1,0 +1,191 @@
+/* Global Layout */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  background: #f4f7fa;
+  color: #333;
+}
+
+h1 {
+  text-align: center;
+  margin: 20px 0;
+  color: #2c3e50;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  background: white;
+  padding: 15px;
+  border-bottom: 2px solid #ddd;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+button {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.2s ease-in-out;
+  font-weight: 500;
+}
+
+button:hover {
+  background: #0056b3;
+}
+
+input[type="text"],
+input[type="file"] {
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  width: 300px;
+  margin: 10px auto;
+  display: block;
+}
+
+/* Output Grid Layout */
+#output {
+  padding: 20px;
+}
+
+/* Common Item Card */
+.qr-item {
+  background: white;
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 1px 5px rgba(0,0,0,0.05);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 2px solid transparent;
+  transition: border-color 0.2s ease, background 0.2s ease;
+  cursor: pointer;
+}
+
+.qr-item:hover {
+  background: #f8fbff;
+  border-color: #007bff;
+}
+
+.qr-item.dragover {
+  border: 2px dashed #007bff;
+  background: #eaf4ff;
+}
+
+/* QR & Barcode */
+.qr-item canvas,
+.qr-item svg {
+  flex-shrink: 0;
+  margin-right: 10px;
+}
+
+.qr-item svg {
+  width: 100px;
+  height: 40px;
+}
+
+.qr-item p {
+  margin: 3px 0;
+  font-size: 14px;
+}
+
+.qr-item strong {
+  color: #2c3e50;
+}
+
+/* Hierarchy Levels */
+.qr-item[data-type="shelves"] {
+  border-left: 6px solid #2c3e50;
+  background-color: #f0f0f0;
+}
+
+.qr-item[data-type="containers"] {
+  border-left: 6px solid #3498db;
+  background-color: #f6fbff;
+  margin-left: 20px;
+}
+
+.qr-item[data-type="folders"] {
+  border-left: 6px solid #9b59b6;
+  background-color: #faf5ff;
+  margin-left: 40px;
+}
+
+.qr-item[data-type="documents"] {
+  border-left: 6px solid #2ecc71;
+  background-color: #f3fff6;
+  margin-left: 60px;
+}
+
+/* Child Group Nesting */
+.child-group {
+  margin-top: 10px;
+  margin-left: 20px;
+  padding-left: 10px;
+  border-left: 2px dashed #ccc;
+  display: none;
+}
+
+/* Headings (optional section headers) */
+h2 {
+  color: #007bff;
+  font-size: 18px;
+  margin-top: 30px;
+  border-bottom: 2px solid #007bff;
+  padding-bottom: 5px;
+}
+
+/* Hierarchical Layout Design */
+.shelf,
+.container,
+.folder {
+  background: white;
+  margin: 10px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+  padding: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.shelf:hover,
+.container:hover,
+.folder:hover {
+  background: #f0f8ff;
+}
+
+.shelf > .title,
+.container > .title,
+.folder > .title {
+  font-weight: bold;
+  font-size: 18px;
+  color: #2c3e50;
+}
+
+.container-wrapper,
+.folder-wrapper,
+.document-wrapper {
+  margin-top: 10px;
+  padding-left: 20px;
+  display: none;
+}
+
+.document {
+  background: #f9f9f9;
+  padding: 10px;
+  margin: 6px 0;
+  border-left: 4px solid #007bff;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+
